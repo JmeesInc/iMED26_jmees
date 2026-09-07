@@ -1,0 +1,4 @@
+torch==2.1.2+cu118
+numpy==1.26.4
+scipy==1.11.4
+opencv-python-headless==4.9.0.80

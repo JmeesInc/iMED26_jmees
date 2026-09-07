@@ -1,0 +1,777 @@
+% =============================================================================
+% iMED Challenge 2026 -- Structured Method Report
+% =============================================================================
+%
+% This report will be used as source material for the joint iMED Challenge paper.
+% Please keep the section/subsection structure unchanged so that reports from
+% different teams can be combined automatically using PyLaTeX.
+%
+% Instructions:
+% - Replace every \TODO{...}. Write "N/A" where a field does not apply.
+% - Complete only the task(s) your team submitted to.
+% - Describe the FINAL submitted method.
+% - Do not add sections (I will write Introduction, Dataset Desc. etc.).
+% - Clearly disclose public external data and pretrained models.
+% - Optional figures should be supplied alongside this .tex file.
+% =============================================================================
+% REFERENCES
+% =============================================================================
+% Include the complete BibTeX entry for every reference cited in this report.
+% Do not submit a separate .bib file.
+
+\begin{filecontents*}[overwrite]{references.bib}
+
+@article{kerbl2023,
+  author  = {Kerbl, Bernhard and Kopanas, Georgios and Leimk{\"u}hler, Thomas and Drettakis, George},
+  title   = {3D Gaussian Splatting for Real-Time Radiance Field Rendering},
+  journal = {ACM Transactions on Graphics},
+  year    = {2023},
+  volume  = {42},
+  number  = {4}
+}
+
+@inproceedings{huang2024endo4dgs,
+  author    = {Huang, Yiming and Cui, Beilei and Bai, Long and Guo, Ziqi and Xu, Mengya and Islam, Mobarakol and Ren, Hongliang},
+  title     = {Endo-4DGS: Endoscopic Monocular Scene Reconstruction with 4D Gaussian Splatting},
+  booktitle = {Medical Image Computing and Computer Assisted Intervention (MICCAI)},
+  year      = {2024}
+}
+
+@article{zhao2023aliked,
+  author  = {Zhao, Xiaoming and Wu, Xingming and Chen, Weihai and Chen, Peter C. Y. and Xu, Qingsong and Li, Zhengguo},
+  title   = {{ALIKED}: A Lighter Keypoint and Descriptor Extraction Network via Deformable Transformation},
+  journal = {IEEE Transactions on Instrumentation and Measurement},
+  year    = {2023},
+  volume  = {72}
+}
+
+@inproceedings{lindenberger2023lightglue,
+  author    = {Lindenberger, Philipp and Sarlin, Paul-Edouard and Pollefeys, Marc},
+  title     = {{LightGlue}: Local Feature Matching at Light Speed},
+  booktitle = {IEEE/CVF International Conference on Computer Vision (ICCV)},
+  year      = {2023}
+}
+
+@inproceedings{sun2021loftr,
+  author    = {Sun, Jiaming and Shen, Zehong and Wang, Yuang and Bao, Hujun and Zhou, Xiaowei},
+  title     = {{LoFTR}: Detector-Free Local Feature Matching with Transformers},
+  booktitle = {IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)},
+  year      = {2021}
+}
+
+@article{umeyama1991,
+  author  = {Umeyama, Shinji},
+  title   = {Least-Squares Estimation of Transformation Parameters Between Two Point Patterns},
+  journal = {IEEE Transactions on Pattern Analysis and Machine Intelligence},
+  year    = {1991},
+  volume  = {13},
+  number  = {4},
+  pages   = {376--380}
+}
+
+@article{telea2004,
+  author  = {Telea, Alexandru},
+  title   = {An Image Inpainting Technique Based on the Fast Marching Method},
+  journal = {Journal of Graphics Tools},
+  year    = {2004},
+  volume  = {9},
+  number  = {1},
+  pages   = {23--34}
+}
+
+@inproceedings{gortler1996,
+  author    = {Gortler, Steven J. and Grzeszczuk, Radek and Szeliski, Richard and Cohen, Michael F.},
+  title     = {The Lumigraph},
+  booktitle = {SIGGRAPH},
+  year      = {1996},
+  pages     = {43--54}
+}
+
+@inproceedings{ronneberger2015unet,
+  author    = {Ronneberger, Olaf and Fischer, Philipp and Brox, Thomas},
+  title     = {{U-Net}: Convolutional Networks for Biomedical Image Segmentation},
+  booktitle = {Medical Image Computing and Computer-Assisted Intervention (MICCAI)},
+  year      = {2015}
+}
+
+@inproceedings{liu2022convnext,
+  author    = {Liu, Zhuang and Mao, Hanzi and Wu, Chao-Yuan and Feichtenhofer, Christoph and Darrell, Trevor and Xie, Saining},
+  title     = {A {ConvNet} for the 2020s},
+  booktitle = {IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)},
+  year      = {2022}
+}
+
+@misc{simeoni2025dinov3,
+  author       = {Sim{\'e}oni, Oriane and others},
+  title        = {{DINOv3}},
+  year         = {2025},
+  howpublished = {arXiv preprint},
+  note         = {Self-supervised visual features; the ConvNeXt-Base encoder distilled on LVD-1689M is used here via \texttt{timm}}
+}
+
+@article{twinanda2017endonet,
+  author  = {Twinanda, Andru P. and Shehata, Sherif and Mutter, Didier and Marescaux, Jacques and de Mathelin, Michel and Padoy, Nicolas},
+  title   = {{EndoNet}: A Deep Architecture for Recognition Tasks on Laparoscopic Videos},
+  journal = {IEEE Transactions on Medical Imaging},
+  year    = {2017},
+  volume  = {36},
+  number  = {1},
+  pages   = {86--97},
+  note    = {Introduces the public Cholec80 dataset}
+}
+
+@misc{iakubovskii2019smp,
+  author       = {Iakubovskii, Pavel},
+  title        = {Segmentation Models Pytorch},
+  year         = {2019},
+  howpublished = {\url{https://github.com/qubvel/segmentation_models.pytorch}}
+}
+
+@inproceedings{wang2025vggt,
+  author    = {Wang, Jianyuan and Chen, Minghao and Karaev, Nikita and Vedaldi, Andrea and Rupprecht, Christian and Novotny, David},
+  title     = {{VGGT}: Visual Geometry Grounded Transformer},
+  booktitle = {IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)},
+  year      = {2025}
+}
+
+% NOTE: please verify this entry against the official release before publication.
+@misc{depthanything3,
+  author       = {{Depth Anything Team}},
+  title        = {Depth Anything 3: Recovering the Visual Space from Any Views},
+  year         = {2025},
+  howpublished = {\url{https://depth-anything-3.github.io/}}
+}
+
+\end{filecontents*}
+
+\documentclass[10pt]{article}
+
+\usepackage[a4paper,margin=2cm]{geometry}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage[hidelinks]{hyperref}
+\usepackage{xcolor}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{4pt}
+\renewcommand{\arraystretch}{1.12}
+
+\newcommand{\TODO}[1]{\textbf{\textcolor{red!70!black}{[TODO: #1]}}}
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+
+\begin{document}
+
+\begin{center}
+    {\Large\bfseries iMED Challenge 2026}\\
+    {\large Structured Method Report}
+\end{center}
+
+% =============================================================================
+\section*{Submission Information}
+% =============================================================================
+
+\begin{tabularx}{\textwidth}{L{0.27\textwidth}Y}
+\toprule
+Team name & Jmees \\
+Method name / acronym & \textbf{Tri3D-GridBA} (PE) and \textbf{SDW} --- Static-rig Depth Warp (NVS) \\
+Task(s) submitted & Both (iMED PE and iMED NVS) \\
+Primary contact & Shunsuke Kikuchi, \texttt{kikushun2111@gmail.com} \\
+Challenge-paper contributors &
+\TODO{List up to 3 proposed contributors in priority order (highest priority first). The final number of authors included per team may be reduced depending on the number of eligible reports received.} \\
+Affiliation(s) &
+\TODO{Full institution name(s); indicate the affiliation(s) corresponding to each proposed contributor.} \\
+Public code (optional) & \TODO{Insert the public repository URL} \\
+\bottomrule
+\end{tabularx}
+
+Final submitted images: \texttt{docker.synapse.org/syn74277461/jmees26-pe:v1} (PE) and
+\texttt{docker.synapse.org/syn74277461/jmees26-nvs:v12} (NVS).
+
+% =============================================================================
+\section{Methodology}
+% =============================================================================
+
+% Describe how the FINAL submitted method works.
+% Focus on the conceptual pipeline and the main technical components.
+% Do not write implementation settings such as hardware, learning rate,
+% batch size, exact training duration, or preprocessing parameters; these belong
+% in Section 3.
+%
+% If you submitted to both tasks, complete both subsections separately.
+
+\subsection{iMED Pose Estimation (PE)}
+
+Our final PE method, \textbf{Tri3D-GridBA}, is a purely geometric (non-learned) pipeline. It keeps the
+front end of the official baseline --- ALIKED keypoints~\cite{zhao2023aliked} matched with
+LightGlue~\cite{lindenberger2023lightglue} --- and replaces the entire back end.
+
+\paragraph{Problem reading.} The quantity to predict is the \emph{same-time cross-camera} relative pose
+$T_{e2\leftarrow e1}(t)$ between the two endoscopes, expressed frame-to-initial
+($T(0)^{-1}T(t)$, frame $0$ = identity), and it is scored by Sim(3)-aligned ATE. Two consequences drive
+the design: (i) ATE depends only on the \emph{translation} of each pose, and (ii) Sim(3) alignment absorbs
+one global scale, so an absolute metric scale is unnecessary but the \emph{relative} scale between frames
+must be consistent. The official baseline recovers the cross-camera pose from an essential matrix and
+therefore normalises the translation to unit norm, discarding exactly this frame-to-frame scale
+information; recovering it is the single largest source of our gain.
+
+\paragraph{Visual information used.} Both stereo pairs are used at every time step. Per frame we compute
+three LightGlue matches from a shared ALIKED feature cache: the endoscope-1 stereo pair
+$e1_L\!\leftrightarrow\!e1_R$, the endoscope-2 stereo pair $e2_L\!\leftrightarrow\!e2_R$, and the
+cross-camera pair $e1_L\!\leftrightarrow\!e2_L$. Because features are extracted once per image and matched
+through shared keypoint indices, a keypoint triangulated in the $e1$ stereo pair can be identified with a
+keypoint triangulated in the $e2$ stereo pair whenever the cross match links them.
+
+\paragraph{Fixed stereo extrinsics.} Each endoscope is a rigid stereo rig, so its left--right extrinsic is
+constant over a sequence. We estimate it once per scope from per-frame essential matrices and aggregate
+over \emph{all} frames (rotation averaging, mean unit translation). This removes the per-frame rotation
+noise of a single-frame estimate and, more importantly, fixes one constant triangulation scale per scope
+for the whole sequence.
+
+\paragraph{Per-frame pose by robust 3D--3D alignment.} With the fixed extrinsics we triangulate two point
+clouds per frame, $\mathbf{X}^{(1)}$ in the $e1_L$ frame and $\mathbf{X}^{(2)}$ in the $e2_L$ frame, and
+pair them through the cross match. The relative pose is the Sim(3) transform that aligns them, solved in
+closed form by a weighted Umeyama estimator~\cite{umeyama1991},
+\begin{equation}
+  (s_t,\mathbf{R}_t,\mathbf{c}_t)\;=\;\arg\min \sum_i w_i\,\bigl\| s\,\mathbf{R}\,\mathbf{x}^{(1)}_i + \mathbf{c} - \mathbf{x}^{(2)}_i \bigr\|^2 ,
+\end{equation}
+wrapped in Tukey-biweight IRLS. The robustifier is essential and its interpretation is specific to this
+task: for a \emph{same-time} rigid cross-camera pose, any correct correspondence already determines the
+transform exactly, so every point that disagrees with the dominant model is a mismatch, a
+non-rigidly-moving point (tissue deformation, instrument), or a point corrupted by inter-camera
+synchronisation jitter. All three are handled as outliers. Weighting by an independent cue (image
+velocity from dense optical flow) was implemented and tested but \emph{hurt}; the fit residual itself is
+the better signal, so the deployed system uses residual-driven weights only.
+
+\paragraph{Grid bundle adjustment.} The per-frame estimates are independent and therefore jittery on
+sequences with fast motion. We add temporal constraints without giving up the per-frame data. If
+$M_{e1}(t)$ and $M_{e2}(t)$ are the ego-motions of each scope between $t$ and $t{+}1$, the cross-camera
+poses obey exactly
+\begin{equation}
+  T(t{+}1) \;=\; M_{e2}(t)\, T(t)\, M_{e1}(t)^{-1}.
+\end{equation}
+We estimate $M_{e1},M_{e2}$ by the same robust 3D--3D alignment applied \emph{temporally} within each
+scope, reusing the per-frame stereo clouds so only the temporal $L\!\leftrightarrow\!L$ match is new.
+Holding the rotations fixed at their per-frame estimates, the relation becomes \emph{linear in the
+translations}, $\mathbf{c}(t{+}1) = \mathbf{B}(t)\,\mathbf{c}(t) + \mathbf{d}(t)$ with
+$\mathbf{B} = \mathbf{R}_{M_{e2}}$, so absolute (same-time) terms, relative (ego-motion) terms and a
+second-difference smoothness prior can be fused in one linear least-squares problem:
+\begin{equation}
+  \min_{\{\mathbf{c}(t)\}} \; \sum_t w_t \bigl\|\mathbf{c}(t)-\mathbf{c}^{\mathrm{meas}}(t)\bigr\|^2
+  \;+\; \lambda_{\mathrm{rel}} \sum_{(t,u)\in\mathcal{E}} \bigl\|\mathbf{c}(u)-\mathbf{B}\mathbf{c}(t)-\mathbf{d}\bigr\|^2
+  \;+\; \lambda \sum_t \bigl\|\mathbf{c}(t{+}1)-2\mathbf{c}(t)+\mathbf{c}(t{-}1)\bigr\|^2 .
+\end{equation}
+Only translations are optimised, since ATE does not see rotation. The absolute weight $w_t$ is a
+per-frame confidence built from the inlier count and the geometric spread of the 3D correspondences,
+divided by the fit residual: an ill-conditioned, clustered point set yields low confidence and is pulled
+toward its better-conditioned neighbours, while a well-conditioned frame is left essentially untouched.
+The ego-motion term carries a deliberately weak weight because scene deformation makes the rigid
+ego-motion assumption only approximate.
+
+\paragraph{Scale and failed registrations.} No absolute scale is estimated. One constant stereo baseline
+per scope gives a single, self-consistent scale for the whole sequence, which is all the Sim(3)-aligned
+metric requires. Frames with too few matches or too few valid 3D--3D pairs are marked unregistered; the
+grid BA still produces a translation for them through the smoothness and ego-motion terms, so the output
+is dense (100\% of frames written). If fewer than three frames register at all, the system falls back to
+the plain per-frame path. Finally, after the BA the whole track is re-anchored so that frame $0$ is
+exactly the identity, as the output contract requires --- a pure translation shift that the Sim(3)-aligned
+metric absorbs and that leaves the trajectory shape unchanged.
+
+\paragraph{Intrinsics guard.} The released PE intrinsics were, at one point, distributed at the native
+calibration resolution rather than the frame resolution. The submitted container detects this case from
+the principal point ($c_x > 0.65\,W$) and rescales $K$ by $W/1280$; an already-corrected $K$ passes
+through unchanged. This makes the container correct under either version of the data, and it is the only
+difference between our final image and the two other PE images we submitted.
+
+\paragraph{Summary of the modifications to the base method.} Relative to the official baseline we keep
+ALIKED+LightGlue and change: (i) 2D--2D essential matrix $\rightarrow$ two-sided 3D--3D Sim(3) alignment
+with a consistent stereo scale; (ii) unit translation $\rightarrow$ metric-consistent translation;
+(iii) per-frame independent poses $\rightarrow$ frame-to-initial parameterisation plus grid BA over
+ego-motion edges; (iv) single-frame stereo extrinsics $\rightarrow$ all-frame aggregation;
+(v) least squares $\rightarrow$ Tukey IRLS.
+
+\subsection{iMED Novel View Synthesis (NVS)}
+
+Our final NVS method, \textbf{SDW} (Static-rig Depth Warp), performs \emph{no per-sequence optimisation at
+all}: each target frame is rendered by a single feed-forward geometric warp of the corresponding source
+frame, followed by hole filling and a fixed photometric transform.
+
+\paragraph{Problem reading.} \texttt{pose.txt} contains exactly two entries per sequence --- endoscope 2
+at the identity and endoscope 1 at a fixed relative pose. The two cameras therefore do not move; only the
+scene deforms. The task is not novel-view synthesis along a trajectory but a per-frame re-projection
+between two \emph{static} viewpoints of a deforming scene. Consequently the deformation does not need to
+be modelled at all: it is fully observed in the per-frame source image and its per-frame depth map. This
+observation is what allows a training-free warp to match a 4D Gaussian Splatting
+baseline~\cite{huang2024endo4dgs,kerbl2023} that optimises for hours per sequence.
+
+\paragraph{Representation.} The scene representation is the per-frame organiser-supplied depth map of
+\texttt{endoscope2/L}, i.e.\ a per-frame point cloud, rendered by forward splatting with a $z$-buffer.
+There is no persistent scene model, no radiance field and no learned appearance.
+
+\paragraph{Pipeline.} For each frame:
+\begin{enumerate}\itemsep2pt
+  \item \textbf{Instrument exclusion.} A surgical-instrument segmenter (ConvNeXt-Base
+        U-Net~\cite{liu2022convnext,ronneberger2015unet}) is run on the source image and the depth of the
+        detected instrument pixels is zeroed so they are never splatted. The reason is a property of the
+        official metric: instrument pixels in \emph{endoscope 1} are excluded from the scored region, so a
+        re-projected instrument can only land where the ground truth shows \emph{tissue}, i.e.\ it paints
+        metal over organ inside the scored area. The measured error profile confirms this: reconstruction
+        error rises monotonically toward the instrument mask (18.7\,dB within 2\,px of it versus 22.1\,dB
+        beyond 64\,px). We use a segmentation model rather than the supplied \texttt{toolL} masks because
+        the supplied masks are not reliable (on two sequences they paint a persistent blob where no
+        instrument exists, including frames in which the instrument has left the field of view), and
+        because the model needs nothing but the source image, which the hidden test is guaranteed to
+        provide.
+  \item \textbf{Geometric warp.} Pixels are back-projected with the source intrinsics,
+        $\mathbf{X}_2 = D(u,v)\,K_2^{-1}[u,v,1]^{\!\top}$, transformed by the constant relative pose
+        $T_{\mathrm{rel}} = T_{e1}^{-1}T_{e2}$, and projected with the target intrinsics $K_1$.
+  \item \textbf{Visibility.} Splatting is resolved with a $z$-buffer implemented as a single
+        scatter-reduce: the quantised depth and the source pixel index are packed into one 64-bit integer
+        so that a minimum-reduction over the target pixel selects the nearest surface. This is exact
+        (no blending) and runs entirely on the GPU. Soft/bilinear splatting was tested and is clearly
+        worse, because averaging several sources per target pixel injects blur.
+  \item \textbf{Hole filling.} Disocclusions --- regions visible to endoscope 1 but occluded in
+        endoscope 2 --- are not a rounding detail: they cover $19.6\%$ of the officially scored pixels
+        (15--27\% per sequence), and replacing them with ground truth is worth $+0.99$\,dB. They are
+        filled with a GPU push--pull pyramid~\cite{gortler1996}. A structure-aware alternative
+        (Fast-Marching inpainting~\cite{telea2004}) raises PSNR but costs $0.044$ SSIM and lost on the
+        organiser leaderboard, so push--pull is the deployed filler (Section~2.2).
+  \item \textbf{Photometric transform.} The two endoscopes differ systematically in white balance and
+        response. A fixed per-channel affine tone curve $\hat{y}_c = \mathrm{clip}(g_c x_c + b_c)$ is
+        applied to the warp output. Its six constants are fitted once, offline, by least squares over the
+        scored region of the 20 public sequences and then frozen; no ground truth is read at inference.
+\end{enumerate}
+
+\paragraph{Camera poses.} Poses are used exactly as supplied and are never refined. We measured that a
+per-sequence geometric correction would be worth up to $\sim\!2$\,dB, but it does not transfer across
+sessions (Section~2.2), so nothing is fitted per scene.
+
+\paragraph{Summary of the modifications to the base method.} Relative to the Endo-4DGS
+baseline~\cite{huang2024endo4dgs} the method is a replacement rather than a modification: no 4D Gaussian
+representation, no deformation field, no per-sequence training. What we add on top of a plain
+depth-reprojection warp is (i) exact GPU $z$-buffered splatting, (ii) instrument exclusion driven by the
+scoring mask definition, (iii) push--pull disocclusion filling, and (iv) a frozen low-order photometric
+transform.
+
+\section{Experiments Performed}
+
+\subsection{iMED Pose Estimation (PE)}
+
+\paragraph{Development split.} We used the 19 released test sequences that ship with ground-truth
+\texttt{pose.txt} as our development set, and grouped sequences by \texttt{session} for
+leave-one-session-out (LOSO) evaluation whenever any quantity was fitted, because sequences from the same
+session share a scene and leak. The organiser validation leaderboard (6 sequences) was used as a second,
+independent readout.
+
+\paragraph{Metric.} Sim(3)-aligned mean ATE in mm, computed with the organiser evaluation script. We
+additionally tracked the RMSE variant, because the leaderboard column is
+\texttt{mean\_ate\_rmse\_mm}; ablation conclusions were checked under both.
+
+\paragraph{Main ablation.} All numbers are mean ATE over the 19 development sequences.
+
+\begin{center}
+\begin{tabular}{lcc}
+\toprule
+Configuration & mean ATE [mm] & vs.\ baseline \\
+\midrule
+Official baseline (ALIKED+LightGlue, essential matrix, unit $t$) & 2.540 & --- \\
+Tri3D: two-sided 3D--3D Umeyama, consistent stereo scale        & 1.034 & $-59\%$ \\
+\quad + Tukey IRLS robust rigid fit                              & 0.998 & $-61\%$ \\
+\quad + grid BA ($K=1$, $\lambda_{\mathrm{rel}}=0.3$) \textbf{[submitted]} & \textbf{0.953} & $\mathbf{-62.5\%}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+An earlier ablation, run before the intrinsics were corrected, isolated the two structural ingredients
+separately and is reported here because the two are orthogonal: Tri3D alone $1.423$; $+$ all-frame stereo
+extrinsic aggregation $1.346$; $+$ temporal BA ($\lambda=2$) $1.292$; both $1.218$.
+
+\paragraph{What did not work.} We tested learned alternatives at every stage and none beat the classical
+pipeline.
+\begin{itemize}\itemsep1pt
+  \item \emph{Learned multi-view pose.} VGGT~\cite{wang2025vggt} applied to the same-time cross-camera
+        pair: $1.79$\,mm (better than the baseline, worse than Tri3D). Depth-Anything-3~\cite{depthanything3}
+        in the same recipe: $1.39$\,mm versus $1.27$\,mm for Tri3D on the same 6-sequence subset ---
+        the best learned variant, still short.
+  \item \emph{Learned depth instead of triangulation.} Substituting DA3 metric depth for stereo
+        triangulation gave $1.084$ versus $1.014$ for Tri3D (6-sequence subset, both with BA). Treating
+        DA3 output as relative depth and affinely fitting it to stereo was much worse ($1.998$ vs
+        $1.060$). The conclusion is conceptual: Tri3D already \emph{is} a correctly-scaled relative depth
+        estimator, and the Sim(3) metric absorbs the remaining global freedom, so a learned metric depth
+        adds nothing it can beat geometry with.
+  \item \emph{Learned confidence for the BA.} Per-frame features do correlate with error
+        (e.g.\ cross-match count, $r=-0.50$), but a learned weighting was worse than the analytic one
+        under LOSO ($1.092$ vs $1.067$) and on test ($1.266$ vs $1.218$).
+  \item \emph{Other matchers.} On a 6-sequence subset, ALIKED $1.014$ beat DoG+HardNet $1.191$,
+        SuperPoint $1.223$, DISK $1.245$ and dense LoFTR~\cite{sun2021loftr} $1.176$. Match
+        \emph{precision}, not match count, is what this task rewards.
+  \item \emph{Ensembling.} A Tri3D$\times$VGGT oracle was worth only $-1.9\%$, so an ensemble was not
+        pursued in the final image. A three-way ensemble with a windowed VGGT variant was built and
+        measured: on the hard subset, an exhaustive weight search assigned VGGT a weight of \emph{exactly
+        zero} in all three variants we tried. Its errors are correlated with Tri3D's because they share
+        the same observability limit, so it contributes no independent information where it would matter.
+  \item \emph{Temporal median smoothing} reduced the mean by $5\%$ but degraded 6 of 19 sequences,
+        including the best-behaved zoom-in trajectories; it is off. \emph{fp16 matching} degraded ATE from
+        $0.953$ to $1.05$ and is off.
+\end{itemize}
+
+\paragraph{Diagnosis of the residual error.} The worst sequences are the fast circular trajectories of two
+particular sessions. We eliminated the obvious causes one by one: correspondence count (the worst
+sequences have \emph{more} matches, $\sim$630), scale noise (CV $0.02$), registration failures (none), and
+depth quality (disparity 23.7\,px, Umeyama residual 0.012). What remains is that geometrically well-fitted
+frames still show roughly $2\times$ translation error under fast lateral motion --- an ill-conditioned
+point distribution combined with inter-camera synchronisation, i.e.\ an observability limit of the data
+rather than a defect of the estimator. This is consistent with four independent methods failing on the
+same sequences.
+
+\paragraph{Final configuration.} Tri3D $+$ all-frame stereo aggregation $+$ IRLS $+$ grid BA
+($K=1$, $\lambda=2.0$, $\lambda_{\mathrm{rel}}=0.3$), with the intrinsics guard enabled. Among the three
+PE images we submitted (which differ \emph{only} in intrinsics handling and in whether a DA3 blend is
+applied), we selected the one that auto-corrects the intrinsics, because it is the only image that is
+correct under both versions of the released calibration; its leaderboard rank and spacing also matched the
+prediction from our local hard-subset measurements. We note explicitly that the leaderboard differences
+between our three PE images ($2.296$/$2.323$/$2.345$) are inside the resolution of a 6-sequence set: a
+bootstrap over paired per-sequence differences (20{,}000 resamples of 6 from our 19) gives $\pm 0.10$\,mm,
+so those gaps were not treated as evidence.
+
+\paragraph{Guarding against leaderboard overfitting.} We used neither readout as a search objective. All
+hyperparameters ($\lambda$, $\lambda_{\mathrm{rel}}$, the BA window $K$, the robustifier, the aggregation
+count) were fixed on the 19-sequence development set before our first submission and never revised on
+leaderboard feedback; our three submitted images differ only in intrinsics handling and an auxiliary blend,
+neither of which is a tuned scalar. At $\pm 0.10$\,mm resolution, tuning against six sequences would be
+fitting noise.
+
+\subsection{iMED Novel View Synthesis (NVS)}
+
+\paragraph{Development split.} All 20 released \texttt{iMED\_NVS} sequences (3{,}953 frames) with
+endoscope-1 ground truth. Anything fitted (the photometric constants) was evaluated leave-one-session-out
+over the 7 sessions; renderer-level A/B comparisons were run over all 20 sequences. The organiser
+validation leaderboard was used as an independent readout. Two measurement systems appear below and are
+\emph{not} directly comparable: an offline LOSO protocol on a frame subsample, and whole-set runs of the
+actual containers; comparisons are always within one system.
+
+\paragraph{Metric.} The official \texttt{metrics.py} (PSNR primary; SSIM and LPIPS secondary), evaluated
+inside the official region (endoscope2$\rightarrow$endoscope1 overlap $\times$ instrument-free). We
+verified that the metric implementation inside the official baseline container is byte-identical to the
+released one, and re-derived the effective scoring region from it directly, because self-evaluation over
+the full frame under-reports by several dB.
+
+\paragraph{Warp versus the 4DGS baseline.} On the one sequence for which we ran the official baseline to
+convergence (\texttt{session\_004\_scene\_2\_tool\_1}, native resolution):
+
+\begin{center}
+\begin{tabular}{lcccl}
+\toprule
+Method & PSNR & SSIM & LPIPS & Cost \\
+\midrule
+Official Endo-4DGS (coarse 2000 + fine 6000 it.) & 21.14 & 0.699 & 0.0190 & $\sim$2\,h optimisation/seq \\
+Ours, depth-reprojection warp                    & \textbf{21.45} & \textbf{0.721} & 0.0198 & inference only \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Photometric transform family.} Fitting the transform is the single largest gain, and its
+\emph{capacity} matters more than its form (20 sequences, LOSO by session, official mask):
+
+\begin{center}
+\begin{tabular}{lcccccc}
+\toprule
+Transform & identity & affine (6) & poly2 (9) & poly3 & $3{\times}3$ matrix & LUT-32 \\
+\midrule
+PSNR & 19.934 & 22.022 & 22.149 & 22.021 & 20.927 & 21.597 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Spatially-varying variants ($21.776$) and a root-polynomial variant also lost. The pattern is consistent:
+only a low-order model that corresponds to actual camera physics transfers across sessions; every extra
+degree of freedom turns into per-scene overfitting.
+
+\paragraph{Renderer factorial.} After a submission that bundled two changes and lost, we made every knob
+an environment variable and ran a $2\times 2$ factorial from a \emph{single} image over all 20 sequences /
+3{,}953 frames:
+
+\begin{center}
+\begin{tabular}{llcc}
+\toprule
+Instrument excluded & Hole filler & PSNR & SSIM (gray) \\
+\midrule
+no  & push--pull & 22.3625 & 0.6892 \\
+\textbf{yes} & \textbf{push--pull} & \textbf{22.4880} & \textbf{0.6939} \\
+no  & Fast-Marching inpainting & 22.4473 & 0.6449 \\
+yes & Fast-Marching inpainting & 22.5602 & 0.6499 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The main effects are additive and consistent at both levels of the other factor: instrument exclusion is
+$+0.126$ PSNR / $+0.005$ SSIM (a clean win on both metrics), whereas inpainting is $+0.085$ PSNR but
+$-0.044$ SSIM. The bundled submission had lost because of the inpainting, not the instrument mask --- which
+we had nearly discarded along with it. This is why the deployed filler is push--pull despite its lower
+PSNR. A push--pull pyramid-depth sweep ($3$: 21.43, $4$: 21.87, $6$: 22.49, $8$: 22.59, $10$: 22.59,
+saturating at $12$) selected a deeper pyramid on our development set, but that change \emph{lost} on the
+organiser leaderboard, so the submitted image keeps the default depth.
+
+\paragraph{Where the remaining error is.} We decomposed the residual inside the official mask. It is
+dominated by per-\emph{scene} calibration mismatch: a sequence-constant global image shift of 8--35\,px
+(intensity-based global alignment is worth $+1.89$\,dB; fitting a Sim(3) pose correction is worth
+$+1.99$\,dB), and a photometric offset whose oracle gain of $+1.44$\,dB is $\sim$90\% scene-level and only
+$+0.14$\,dB frame-level. Combining both oracles reaches $25.879$ versus $21.917$ deployed. Crucially,
+\emph{both corrections fail to transfer under LOSO} (a burned-in pose correction costs $-0.05$ to
+$-0.40$\,dB on unseen sessions; a photometric transform predicted from source-image statistics scores
+$20.393$, winning on 3 of 20). Estimating them requires observing endoscope 1, which is not permitted.
+We therefore conclude that our renderer is close to the ceiling of what is observable from endoscope 2
+alone, and we deliberately stopped adding per-scene machinery.
+
+\paragraph{Other rejected ideas.} Multi-source temporal warping (filling holes from neighbouring frames
+$t\pm k$) was worse than single-frame inpainting on all four sequences tested --- in a deforming scene a
+neighbouring frame supplies misaligned texture. Bilinear/softmax splatting cost $2.29$\,dB. Restricting
+the inpainting neighbourhood cost $0.5$\,dB. A small U-Net refiner ($+1.59$\,dB) was beaten by the
+six-constant affine transform ($+1.83$\,dB in the same protocol).
+
+\paragraph{Final configuration and one deliberate exception.} The submitted image is: GPU warp $+$
+instrument exclusion $+$ push--pull filling $+$ \emph{affine} photometric transform. The last choice is
+made \emph{against} our development CV, which prefers the 9-constant poly2 by $0.23$\,dB, and \emph{for}
+the leaderboard. The reason is that two independent leaderboard pairs of containers differing in nothing
+but this transform gave the same result twice ($+0.058$ and $+0.057$ in favour of affine), while every
+parameter we had selected by maximising development CV had inverted on the held-out set (the photometric
+order, the hole filler, the pyramid depth --- three of four), and the one change that did transfer was the
+one derived from the geometry of the scoring mask rather than from a CV sweep. This is the same
+``only low-order models transfer'' result as the transform-family sweep above.
+
+\paragraph{Guarding against leaderboard overfitting.} The two readouts disagree systematically --- three of
+the four settings we chose by maximising CV inverted on the held-out set --- so we treated neither as a
+search objective. Each submission therefore changed exactly one factor, and the only leaderboard-driven
+decision was a binary choice between two orders of the same photometric model, fixed by a decision rule
+written down before the submission was scored and accepted only because the effect had already replicated
+at the same magnitude in an independent pair of containers. No continuous parameter was tuned on
+leaderboard feedback: the one sweep we ran (pyramid depth) was CV-driven, lost, and was reverted to its
+default rather than re-tuned, after which we stopped parameter search.
+
+% =============================================================================
+\section{Implementation Details}
+% =============================================================================
+
+% Report concrete implementation settings for the FINAL submitted method.
+% Do not repeat the method description from Section 1 or the experimental
+% comparisons from Section 2.
+%
+% Clearly disclose all pretrained models/checkpoints and public external data.
+
+\subsection{iMED Pose Estimation (PE)}
+
+\paragraph{Hardware.} Development on a single NVIDIA Quadro RTX 8000 (48\,GB); one GPU is used at
+inference. The evaluation host is a single RTX 4090 with a 10-minute budget for all sequences combined.
+
+\paragraph{Training.} \textbf{None.} The submitted PE method contains no trained component and no fitted
+constants; it is purely geometric. Consequently there is no optimiser, learning rate, batch size, training
+schedule, loss weighting or data augmentation to report.
+
+\paragraph{Pretrained models and external data.} ALIKED (\texttt{aliked-n16}) and LightGlue
+(\texttt{aliked} weights), both from the public \texttt{cvg/LightGlue} release and used off the shelf with
+no fine-tuning. The weights are baked into the image at build time so the container runs with
+\texttt{-{}-network=none}. \textbf{No external datasets were used}, and no iMED data was used to fit
+anything.
+
+\paragraph{Input and preprocessing.} Frames are consumed at their native resolution (600$\times$480 in the
+released PE data) with no resizing, cropping or augmentation. Intrinsics are read from \texttt{K.txt};
+if the principal point indicates an unscaled native-resolution calibration ($c_x > 0.65\,W$), $K$ is
+rescaled by $W/1280$, otherwise it is used verbatim.
+
+\paragraph{Feature extraction and matching.} ALIKED with \texttt{max\_num\_keypoints}\,=\,2048; LightGlue
+with default thresholds; fp32 throughout (fp16 was measured to degrade ATE from 0.953 to 1.05\,mm).
+Features are extracted once per image and cached; the cache is shared by the stereo-extrinsic aggregation,
+the same-time cross-camera matches and the temporal ego-motion edges.
+
+\paragraph{Geometric parameters.}
+\begin{itemize}\itemsep1pt
+  \item Minimum matches to attempt a frame: 8; minimum 3D--3D correspondences to accept a pose: 12.
+  \item Stereo extrinsic: estimated per frame by \texttt{findEssentialMat} (RANSAC, prob 0.999,
+        threshold $10^{-3}$ on normalised coordinates) and aggregated over \emph{all} frames
+        (\texttt{-{}-nagg 9999}): rotation averaging plus mean unit translation.
+  \item Robust rigid fit: Tukey biweight IRLS, tuning constant $4.685\,\sigma$ with
+        $\sigma$ = median residual, 5 reweighting iterations. RANSAC on the rigid model is available but
+        disabled. Velocity-based prior weights are disabled ($\alpha = 0$).
+  \item Grid BA: temporal window $K=1$; smoothness weight $\lambda = 2.0$; relative (ego-motion) weight
+        $\lambda_{\mathrm{rel}} = 0.3$, with each edge scaled by $\min(n_1,n_2)/50$ where $n_i$ are the
+        temporal inlier counts; absolute weight $w_t = n_t \cdot \mathrm{spread}_t / (1 + 5\,\mathrm{resid}_t)$
+        normalised by its median over valid frames, where $\mathrm{spread}$ is the median distance of the
+        3D correspondences from their median. The normal matrix is regularised with $10^{-6}\mathbf{I}$
+        to fix the gauge across gaps. Ego-motion edges use IRLS with the same settings.
+  \item Post-processing: frame-to-initial, then an exact re-anchoring of frame 0 to
+        $(\mathbf{t}=\mathbf{0},\,q=\mathrm{identity})$.
+\end{itemize}
+
+\paragraph{Runtime.} $\approx$0.43\,s per frame; 11 minutes for all 19 development sequences on the
+RTX 8000, i.e.\ comfortably inside the budget on the faster evaluation GPU. The feature cache and the
+reuse of per-frame stereo clouds by the ego-motion edges cut this from 18.5 minutes with bit-identical
+output.
+
+\paragraph{Container.} \texttt{nvidia/cuda:11.8.0-cudnn8-runtime-ubuntu22.04}; Python 3.10;
+\texttt{torch 2.1.2+cu118}, \texttt{torchvision 0.16.2+cu118}, \texttt{numpy 1.26.4},
+\texttt{scipy 1.11.4}, \texttt{opencv-python-headless 4.9.0.80}, LightGlue from source. Image size
+9.37\,GB. Contract: \texttt{/input} mounted read-only, one
+\texttt{/output/<seq>/pose\_predictions.txt} per sequence with 8 columns
+(\texttt{k tx ty tz qx qy qz qw}), one row per input frame, frame 0 the identity.
+
+\subsection{iMED Novel View Synthesis (NVS)}
+
+\paragraph{Hardware.} Development on a single NVIDIA Quadro RTX 8000 (48\,GB). The container requires
+CUDA; a CPU-only build of the same method was rejected twice by the evaluator regardless of its wall-clock
+time, so the entire warp, $z$-buffer, hole filling and photometric transform run on the GPU.
+
+\paragraph{Training.} \textbf{No per-sequence optimisation and no training on iMED data.} The only learned
+component is the instrument segmenter (disclosed below), which is used inference-only.
+
+\paragraph{Pretrained models and external data (disclosure).} The instrument segmenter is a U-Net with a
+ConvNeXt-Base encoder (\texttt{tu-convnext\_base.dinov3\_lvd1689m} via \texttt{timm}; a ConvNeXt-Base
+distilled from DINOv3 features~\cite{liu2022convnext,simeoni2025dinov3}) built with
+\texttt{segmentation\_models\_pytorch}~\cite{iakubovskii2019smp}. It was trained by our group for binary
+instrument segmentation on the \textbf{public Cholec80 dataset}~\cite{twinanda2017endonet}; the checkpoint
+predates this challenge, contains no iMED data, and is used here frozen. The weights are baked into the
+image so the container runs with \texttt{-{}-network=none}. The photometric constants are the only other
+fitted quantity, and they are fitted on the released public iMED NVS sequences (no hidden data, no
+target-view ground truth at inference).
+
+\paragraph{Segmenter inference settings.} BGR$\rightarrow$RGB, bilinear resize to $512\times512$, ImageNet
+normalisation (mean $[0.485,0.456,0.406]$, std $[0.229,0.224,0.225]$), sigmoid output, bilinear resize of
+the probability map back to the input resolution, threshold $0.30$. The threshold was selected on the
+development set ($0.30$: 22.222; $0.50$ and $0.70$: 22.18), i.e.\ leaning slightly toward over-calling: a
+missed instrument re-projects metal onto tissue, which costs more than inpainting a little extra tissue.
+
+\paragraph{Warp settings.}
+\begin{itemize}\itemsep1pt
+  \item Full native RGB resolution ($1280\times1024$); \texttt{K.txt} is used verbatim, as it is
+        calibrated at full resolution. Output resolution equals the target resolution exactly --- the
+        official metric does not resize.
+  \item Depth is read from \texttt{endoscope2/depthL/*.npy} and upsampled to RGB resolution with
+        \textsc{nearest} interpolation, deliberately, so that no interpolated sample straddles a depth
+        discontinuity.
+  \item $z$-buffer: depth is quantised with a scale factor of 64 and packed as
+        \texttt{(z << 32) | source\_index} into an \texttt{int64}; visibility is a single
+        \texttt{scatter\_reduce\_(..., reduce="amin")} over the target pixel index. Nearest-integer
+        (not bilinear) target coordinates.
+  \item Hole filling: push--pull pyramid with 6 levels, $2\times$ average pooling with
+        \texttt{ceil\_mode}, bilinear upsampling, and a validity threshold of $10^{-5}$ on the
+        accumulated weight.
+  \item Photometric transform, in BGR and $[0,1]$: $\hat{y}=\mathrm{clip}(g\odot x + b)$ with
+        $g = [0.665668,\ 0.614038,\ 0.642004]$ and $b = [0.097009,\ 0.143732,\ 0.170179]$, fitted by
+        least squares over the officially scored pixels of all 20 public sequences.
+\end{itemize}
+
+\paragraph{Graceful degradation.} If the segmenter cannot be constructed, the pipeline falls back to the
+supplied \texttt{endoscope2/toolL} masks; if those are absent too, the frame is splatted with the
+instrument included (the pre-exclusion behaviour). A frame with no depth map is written as black rather
+than aborting the run.
+
+\paragraph{Runtime.} $\approx$59\,s per sequence end to end (all 20 development sequences,
+3{,}953 frames, on the RTX 8000); the warp itself is $\approx$79\,ms per frame. For reference, the CPU
+implementation of the same algorithm cost 264\,s per sequence.
+
+\paragraph{Container.} \texttt{nvidia/cuda:11.8.0-cudnn8-runtime-ubuntu22.04}; Python 3.10;
+\texttt{torch 2.1.2+cu118}, \texttt{torchvision 0.16.2+cu118}, \texttt{numpy 1.26.4},
+\texttt{scipy 1.11.4}, \texttt{opencv-python-headless 4.9.0.80}, \texttt{timm 1.0.24},
+\texttt{segmentation-models-pytorch 0.5.0} (installed with \texttt{-{}-no-deps} so that its unpinned
+\texttt{torch} requirement cannot silently replace the CUDA-11.8 build). Image size 10.1\,GB. Contract:
+\texttt{/input} mounted read-only; output written as
+\texttt{/output/<seq>/renders/00000.png}\,\ldots, one $1280\times1024$ 8-bit RGB PNG per source frame, in
+sorted order. Ground-truth target views are never read.
+
+% =============================================================================
+\section{Results on Public Set (Optional)}
+% =============================================================================
+
+% This section is optional.
+% Report only results measured on a released development/validation split or
+% results explicitly supplied by the organizers. Do not infer hidden-test results.
+%
+% Clearly identify the split used.
+
+\subsection{iMED Pose Estimation (PE)}
+
+\textbf{Split: the 19 released test sequences that ship with ground-truth \texttt{pose.txt}}, scored with
+the organiser evaluation script (Sim(3)-aligned ATE).
+
+\begin{center}
+\begin{tabular}{lccc}
+\toprule
+Method & mean ATE [mm] & Registered frames & Runtime \\
+\midrule
+Official baseline (ALIKED+LightGlue, essential) & 2.540 & 100\% & $\sim$14\,s/seq \\
+\textbf{Tri3D-GridBA (submitted)}               & \textbf{0.953} & 100\% & $\sim$0.43\,s/frame \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Under the RMSE variant of the same metric, the submitted configuration scores $1.079$\,mm over the same
+19 sequences and $2.070$\,mm over the 6 hardest of them. Runtimes are on a Quadro RTX 8000.
+
+\textbf{Organiser-supplied validation leaderboard (6 sequences, \texttt{mean\_ate\_rmse\_mm}).} The
+submitted image scored $2.296$\,mm. We report this only for completeness: a bootstrap over paired
+per-sequence differences indicates a resolution of $\pm 0.10$\,mm on a 6-sequence set, so it should not be
+compared at finer granularity than that. The gap between the leaderboard value and the development value
+is consistent with the leaderboard subset being weighted toward the fast-circular sequences that we
+identify above as an observability limit.
+
+\textbf{Qualitative observation.} Errors are strongly session-structured rather than frame-structured.
+On smooth trajectories the recovered translation tracks the ground truth closely and the grid BA barely
+moves it; on fast circular motion the per-frame translation is systematically about twice too large even
+when the rigid fit is well-conditioned by every internal diagnostic we could construct
+(match count, scale variance, triangulation residual, disparity). Four methodologically independent
+estimators fail on the same sequences, which is why we characterise this as a property of the data.
+
+\subsection{iMED Novel View Synthesis (NVS)}
+
+\textbf{Split: the 20 released \texttt{iMED\_NVS} sequences (3{,}953 frames) with endoscope-1 ground
+truth}, scored with the official \texttt{metrics.py} inside the official
+overlap\,$\times$\,instrument-free region.
+
+\begin{center}
+\begin{tabular}{lccc}
+\toprule
+Configuration (all 20 sequences, all frames, measured from the containers) & PSNR & SSIM (gray) & Runtime \\
+\midrule
+Warp $+$ push--pull $+$ poly2, instrument re-projected     & 22.3625 & 0.6892 & 31.5\,s/seq \\
+\quad $+$ instrument exclusion                              & 22.4880 & 0.6939 & 44.3\,s/seq \\
+\textbf{$+$ affine photometric transform (submitted)}       & \textbf{22.3897} & 0.6830 & 59.2\,s/seq \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+For reference, on the single sequence for which we ran the official Endo-4DGS baseline to convergence
+(\texttt{session\_004\_scene\_2\_tool\_1}, native resolution), the baseline scores PSNR 21.14 / SSIM 0.699
+/ LPIPS 0.0190 after $\sim$2\,h of per-sequence optimisation, and our warp scores PSNR 21.45 / SSIM 0.721
+/ LPIPS 0.0198 with no optimisation at all.
+
+\textbf{Organiser-supplied validation leaderboard.} The submitted image scored PSNR $21.156$,
+SSIM $0.621$, LPIPS $0.200$.
+
+\textbf{Qualitative observations.} (i) Reconstruction quality inside the scored region is limited by
+per-scene calibration consistency, not by the renderer: a sequence-constant image shift of 8--35\,px is
+present in every sequence and accounts for $\sim$2\,dB, but its magnitude and direction are scene-specific
+and do not transfer to unseen sessions. (ii) Disocclusion holes cover $19.6\%$ of the scored pixels and
+are the second-largest term ($+0.99$\,dB if filled with ground truth); the visible failure mode of the
+push--pull filler is a smear across occlusion boundaries, and the structure-aware alternative that fixes
+this visually is the one that costs SSIM. (iii) The photometric transform is not purely a colour
+correction: part of its gain is the MSE-optimal contraction toward the conditional mean, which raises PSNR
+and SSIM while lowering contrast and worsening LPIPS. We accepted this because PSNR is the primary metric,
+and we note it here so the effect is not mistaken for a genuine appearance model.
+
+% Optional qualitative figure:
+%
+% \begin{figure}[h]
+%     \centering
+%     \includegraphics[width=0.9\linewidth]{qualitative.png}
+%     \caption{\TODO{Brief description and data split used.}}
+% \end{figure}
+
+% =============================================================================
+% cite as normal like 3D Gaussian Splatting~\cite{kerbl2023}
+
+\bibliographystyle{unsrt}
+\bibliography{references}
+
+\end{document}

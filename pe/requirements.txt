@@ -1,0 +1,9 @@
+# Runtime deps are installed in the Dockerfile (pinned, cu118 torch + LightGlue).
+# This file documents the Python deps for reference / non-Docker runs.
+numpy==1.26.4
+scipy==1.11.4
+opencv-python-headless==4.9.0.80
+tqdm==4.66.2
+torch==2.1.2
+torchvision==0.16.2
+# LightGlue (ALIKED extractor) from source: pip install git+https://github.com/cvg/LightGlue.git

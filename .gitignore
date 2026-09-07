@@ -1,0 +1,33 @@
+# Model weights are shipped out of band (see nvs/weights/README.md)
+*.pth
+*.pt
+*.ckpt
+*.safetensors
+*.onnx
+
+# Challenge data must never be committed
+data/
+input/
+output/
+*.npy
+*.npz
+
+# Build / run artefacts
+__pycache__/
+*.py[cod]
+*.log
+*.tar
+*.tar.gz
+
+# LaTeX
+*.aux
+*.bbl
+*.blg
+*.out
+*.pdf
+*.synctex.gz
+references.bib
+
+# OS / editor
+.DS_Store
+*.swp
